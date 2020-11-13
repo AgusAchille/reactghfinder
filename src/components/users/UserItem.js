@@ -2,7 +2,7 @@ import React from 'react'
 import propTypes from 'prop-types'
 import { Link } from 'react-router-dom'
 
-export default function UserItem ({user: { login, avatar_url, html_url } }) {
+export default function UserItem ({user: { login, avatar_url } }) {
     return (
         <div className='card text-center'>
             <Link to={`/user/${login}`}>

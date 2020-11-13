@@ -1,22 +1,23 @@
-import React, {Fragment} from 'react';
+import React, {Fragment, useState } from 'react';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import './App.css';
 import Navbar from './components/layout/Navbar';
 import Users from './components/users/Users';
 import User from './components/users/User'
 import Axios from 'axios';
-import Search from './components/layout/Search'
+import Search from './components/users/Search'
 import Alert from './components/layout/Alert'
 import About from './components/pages/About'
+import GithubState from './Context/github/GithubState'
 
-export default class App extends React.Component {
-    state  = {
-        usersList: [],
-        loading: false,
-        alert: null,
-        user: {},
-        userLoading: false
-    }
+export default function App() {
+    const [usersList, setUsersList] = useState([]) ;
+    const [user, setUser] = useState({});
+    const [repos, setRepos] = useState([]);
+    const [alert, setAlert] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [userLoading, setUserLoading] = useState(false);
+    const [reposLoading, setReposLoading] = useState(false);
 
     // async componentDidMount(){
     //     this.setState({loading: true});
@@ -26,25 +27,22 @@ export default class App extends React.Component {
     //     console.log(response);
     // }
     
-    render(){
-        const {usersList, user, loading, userLoading} = this.state;
-
-        return (
+    return (
+        <GithubState>
             <Router>
                 <div className="App">
                     <Navbar title="Github Finder" icon="fab fa-github"/>
                     <div className="container">
-                        <Alert alert={this.state.alert}/>
+                        <Alert alert={alert}/>
                         <Switch>
                             <Route exact path='/' render={props =>(
                                 <Fragment>
                                     <Search
-                                        searchText={this.searchText}
-                                        clearBtn={this.clearBtn}
-                                        showClearBtn={usersList.length > 0}
-                                        setAlert={this.setAlert}
+                                        clearBtn={ clearBtn }
+                                        showClearBtn={ usersList.length > 0 }
+                                        setAlert={ setAlertMessage }
                                         />
-                                    <Users users={ usersList } loading={loading} />
+                                    <Users users={ usersList } loading={ loading } />
                                 </Fragment>
                             )} 
                             />
@@ -52,45 +50,50 @@ export default class App extends React.Component {
                             <Route exact path='/user/:login' render={props => (
                                 <User
                                     { ... props }
-                                    getUser={this.getUser}
+                                    getUser={getUser}
+                                    getRepos={getRepos}
                                     user={user}
+                                    repos={repos}
                                     loading={userLoading}/>
                             )}/>
                         </Switch>
                     </div>
                 </div>
             </Router>
-        );
-    }
+        </GithubState>
+    );
 
-    getUser = async (login) => {
+    async function getUser (login) {
         if(login){
-            this.setState({userLoading: true});
+            setUserLoading(true);
             const response = await Axios.get(`https://api.github.com/users/${login}`, githubConfig);
-            this.setState({user: response.data, userLoading: false});
+            setUser(response.data);
+            setUserLoading(false);
             //console.log(response);
         }
-        
     }
 
-    setAlert = (message, type) => {
-        this.setState({alert: {message: message, type: type}})
-
-        setTimeout(() => {this.setState({alert: null})}, 3000);
-    }
-
-    searchText = async (text) => {
-        if(text){
-            this.setState({loading: true});
-            const response = await Axios.get(`https://api.github.com/search/users?q=${text}`, githubConfig);
-            this.setState({usersList: response.data.items, loading: false});
-            
-            console.log(response);
+    async function getRepos(login){
+        if(login){
+            setReposLoading(true);
+            const response = await Axios.get(`https://api.github.com/users/${login}/repos?per_page=${reposPerPage}&sort=created:asc`, githubConfig);
+            setRepos(response.data);
+            setReposLoading(false);
+            //console.log(response);
         }
     }
 
-    clearBtn = () => this.setState({usersList: []});
+    function setAlertMessage(message, type) {
+        setAlert({message: message, type: type})
+
+        setTimeout(() => { setAlert(null) }, 3000);
+    }
+
+    function clearBtn() { setUsersList([]) };
 }
+
+const reposPerPage = 5
+
 
 const githubConfig = {
     headers: {
