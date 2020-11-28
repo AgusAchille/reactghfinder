@@ -1,0 +1,3 @@
+[build]
+    publish="build"
+    environment = { GITHUB_TOKEN = "716a938b73c10250cfd1eb2e1ddd508519b80a26" }

@@ -1,4 +1,4 @@
-// import React from 'react'
+import React from 'react'
 import PropTypes from 'prop-types'
 import { Link } from 'react-router-dom';
 
@@ -6,7 +6,7 @@ export default function Navbar({ icon, title }) {
     return (
         <nav className='navbar bg-primary'>
             <h1>
-                <i className={icon} /> {title}
+                <Link style={{padding: 0, margin: 0}}to='/'><i className={icon} /> {title}</Link>
             </h1>
             <ul>
                 <li><Link to='/'>Home</Link></li>
