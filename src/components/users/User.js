@@ -1,21 +1,25 @@
-import React, { Fragment, useEffect } from 'react'
+import React, { Fragment, useEffect, useContext } from 'react'
 import { Link } from 'react-router-dom'
 import Spinner from '../layout/Spinner'
 import PropTypes from 'prop-types'
 import Repos from '../repos/Repos'
+import GithubContext from '../../Context/github/githubContext'
 
-export default function User ({ user, getUser, repos, getRepos, match, loading }) {
+export default function User ({ repos, getRepos, match }) {
+    const githubContext = useContext(GithubContext);
+    
     useEffect(() => {
         const login = match.params.login;
-        if(login !== user.login)
-            getUser(login);
-            getRepos(login);
+        if(login !== githubContext.user.login)
+            githubContext.getUser(login);
+            githubContext.getRepos(login);
         // eslint-disable-next-line
     }, []);
     
-    if (loading) return <Spinner />
+
+    if (githubContext.userLoading) return <Spinner />
     
-    const { name, avatar_url, location, bio, blog, login, html_url, followers, following, public_repos, public_gists, hireable, company } = user;
+    const { name, avatar_url, location, bio, blog, login, html_url, followers, following, public_repos, public_gists, hireable, company } = githubContext.user;
     
     return (
         <Fragment>
@@ -57,19 +61,10 @@ export default function User ({ user, getUser, repos, getRepos, match, loading }
                 <div className="badge badge-light">Public repos: {public_repos}</div>
                 <div className="badge badge-dark">Public gists: {public_gists}</div>
             </div>
-            <Repos repos={repos} />
+            <Repos repos={githubContext.repos} />
         </Fragment>
     )
 }        
-
-
-User.propTypes = {
-    loading: PropTypes.bool,
-    user: PropTypes.object.isRequired,
-    repos: PropTypes.array.isRequired,
-    getUser: PropTypes.func.isRequired,
-    getRepos: PropTypes.func.isRequired
-}
 
 const checkIcon = <i className="fas fa-check text-success" />;
 const crossIcon = <i className="fas fa-times-circle text-danger" />;
